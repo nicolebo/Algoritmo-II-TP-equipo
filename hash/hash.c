@@ -1,19 +1,44 @@
-#include <stdbool.h>
-#include <stddef.h>
+#include "hash.h"
+#include <stdlib.h>
 
-// Los structs deben llamarse "hash" y "hash_iter".
-struct hash;
-struct hash_iter;
+typedef struct item {
+	void* valor;
+	char* clave
+} item_t;
 
-typedef struct hash hash_t;
-typedef struct hash_iter hash_iter_t;
+struct hash {
+	item** tabla;
+	size_t capacidad;
+	size_t cantidad;
+	hash_destruir_dato_t* destruir_dato; 
+};
+struct hash_iter {
+	hash_t* hash;
+};
 
-// tipo de función para destruir dato
-typedef void (*hash_destruir_dato_t)(void *);
-
-/* Crea el hash
- */
-hash_t *hash_crear(hash_destruir_dato_t destruir_dato);
+/* Creo un item */
+item_t* crear_item(void* valor, char* clave) {
+	item_t* item = malloc(sizeof(item_t));
+	if (item == NULL) return NULL;
+	item->valor = valor;
+	item->clave = clave;
+	return item;
+}
+/* Crea el hash */
+hash_t* hash_crear(hash_destruir_dato_t destruir_dato) {
+	//Creo el hash y pido memoria dinamica
+	hash_t* hash = malloc(sizeof(hash_t));
+	if(hash == NULL) return NULL;
+	//pido memoria dinamica para la tabla del hash
+	hash->tabla = malloc(hash->capacidad * sizeof(item_t*));
+	if(hash->tabla == NULL)
+    {
+        free(hash);
+        return NULL;
+    }
+    hash->destruir_dato = destruir_dato;
+    return hash;
+}
 
 /* Guarda un elemento en el hash, si la clave ya se encuentra en la
  * estructura, la reemplaza. De no poder guardarlo devuelve false.

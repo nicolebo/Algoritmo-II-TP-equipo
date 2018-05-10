@@ -13,10 +13,10 @@ typedef struct item {
 } item_t;
 
 struct hash {
-	item* tabla;
+	item_t* tabla;
 	size_t capacidad;
 	size_t cantidad;
-	hash_destruir_dato_t* destruir_dato; 
+	hash_destruir_dato_t destruir_dato;
 };
 
 struct hash_iter {
@@ -26,7 +26,7 @@ struct hash_iter {
 size_t funcion_hash(char* clave) {
 	size_t pos;
 	for (pos = 0; *clave != '\0'; clave++)
-		pos = s + 31*pos;
+		pos = *clave + 31*pos;
 	return pos % TAM_HASH;
 }
 

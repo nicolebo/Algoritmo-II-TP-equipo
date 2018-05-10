@@ -44,6 +44,7 @@ hash_t* hash_crear(hash_destruir_dato_t destruir_dato) {
 	//Creo el hash y pido memoria dinamica
 	hash_t* hash = malloc(sizeof(hash_t));
 	if(hash == NULL) return NULL;
+	hash->capacidad = TAM_HASH;
 	//pido memoria dinamica para la tabla del hash
 	hash->tabla = malloc(hash->capacidad * sizeof(item_t));
 	if(hash->tabla == NULL)
@@ -60,7 +61,9 @@ hash_t* hash_crear(hash_destruir_dato_t destruir_dato) {
  * Pre: La estructura hash fue inicializada
  * Post: Se almacenó el par (clave, dato)
  */
-bool hash_guardar(hash_t *hash, const char *clave, void *dato);
+bool hash_guardar(hash_t *hash, const char *clave, void *dato) {
+
+}
 
 /* Borra un elemento del hash y devuelve el dato asociado.  Devuelve
  * NULL si el dato no estaba.

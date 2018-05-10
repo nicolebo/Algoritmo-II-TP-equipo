@@ -1,6 +1,8 @@
 #include "hash.h"
 #include <stdlib.h>
 
+#define TAM_HASH 1000;
+
 //Defino el estado de cada item
 typedef enum{VACIO, BORRADO, DATO} estado_t;
 
@@ -16,9 +18,17 @@ struct hash {
 	size_t cantidad;
 	hash_destruir_dato_t* destruir_dato; 
 };
+
 struct hash_iter {
 	hash_t* hash;
 };
+
+size_t funcion_hash(char* clave) {
+	size_t pos;
+	for (pos = 0; *clave != '\0'; clave++)
+		pos = s + 31*pos;
+	return pos % TAM_HASH;
+}
 
 /* Creo un item */
 item_t* crear_item(void* valor, char* clave) {
@@ -28,6 +38,7 @@ item_t* crear_item(void* valor, char* clave) {
 	item->clave = clave;
 	return item;
 }
+
 /* Crea el hash */
 hash_t* hash_crear(hash_destruir_dato_t destruir_dato) {
 	//Creo el hash y pido memoria dinamica

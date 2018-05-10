@@ -1,13 +1,17 @@
 #include "hash.h"
 #include <stdlib.h>
 
+//Defino el estado de cada item
+typedef enum{VACIO, BORRADO, DATO} estado_t;
+
 typedef struct item {
 	void* valor;
-	char* clave
+	char* clave;
+	estado_t estado;
 } item_t;
 
 struct hash {
-	item** tabla;
+	item* tabla;
 	size_t capacidad;
 	size_t cantidad;
 	hash_destruir_dato_t* destruir_dato; 

@@ -1,10 +1,10 @@
 #include "hash.h"
 #include <stdlib.h>
-
+#include <string.h>
 #define TAM_HASH 1000;
 
 //Defino el estado de cada item
-typedef enum{VACIO, BORRADO, DATO} estado_t;
+typedef enum{VACIO, BORRADO, OCUPADO} estado_t;
 
 typedef struct item {
 	void* valor;
@@ -28,6 +28,43 @@ size_t funcion_hash(char* clave) {
 	for (pos = 0; *clave != '\0'; clave++)
 		pos = *clave + 31*pos;
 	return pos % TAM_HASH;
+}
+
+/*
+ * Se fija si las claves son iguales
+ * Devuelve true si son iguales, de lo contrario devuelve false
+ */
+
+bool clave_son_iguales(char* clave1, char* clave2) {
+    return !strcmp(clave1, clave2);
+}
+
+/*
+ * Obtiene la posicion de una clave en el hash, en caso de que no exista la clave
+ * se devuelve una posicion disponible para almacenarla
+ */
+size_t obtener_posicion(hash_t* hash, size_t posicion_hash, char* clave) {
+
+    bool encontramos = false;
+    while (!encontramos) {
+        item_t item = hash->tabla[posicion_hash];
+        switch(item.estado){
+            case VACIO: encontramos = true;
+                break;
+            case BORRADO:
+				(posicion_hash == hash->capacidad-1) ? posicion_hash = 0 : posicion_hash++;
+                break;
+            case OCUPADO:
+                if (clave_son_iguales(item.clave, clave)) {
+					encontramos = true;
+				} else {
+					(posicion_hash == hash->capacidad-1) ? posicion_hash = 0 : posicion_hash++;
+                }
+                break;
+        }
+
+    }
+    return posicion_hash;
 }
 
 /* Creo un item */
@@ -75,7 +112,7 @@ bool hash_guardar(hash_t *hash, const char *clave, void *dato) {
  * Post: El elemento fue borrado de la estructura y se lo devolvió,
  * en el caso de que estuviera guardado.
  */
-void *hash_borrar(hash_t *hash, const char *clave);
+void* hash_borrar(hash_t *hash, const char *clave);
 
 /* Obtiene el valor de un elemento del hash, si la clave no se encuentra
  * devuelve NULL.

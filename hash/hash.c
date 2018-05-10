@@ -34,7 +34,7 @@ hash_t* hash_crear(hash_destruir_dato_t destruir_dato) {
 	hash_t* hash = malloc(sizeof(hash_t));
 	if(hash == NULL) return NULL;
 	//pido memoria dinamica para la tabla del hash
-	hash->tabla = malloc(hash->capacidad * sizeof(item_t*));
+	hash->tabla = malloc(hash->capacidad * sizeof(item_t));
 	if(hash->tabla == NULL)
     {
         free(hash);

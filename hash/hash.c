@@ -62,7 +62,11 @@ hash_t* hash_crear(hash_destruir_dato_t destruir_dato) {
  * Post: Se almacenó el par (clave, dato)
  */
 bool hash_guardar(hash_t *hash, const char *clave, void *dato) {
-
+	if (hash->cantidad => hash->capacidad)
+		return false; //TODO: Redimensionar!!
+	size_t pos = funcion_hash(clave);
+	//if (hash->tabla[pos]->clave)
+	return true; //Provisorio
 }
 
 /* Borra un elemento del hash y devuelve el dato asociado.  Devuelve

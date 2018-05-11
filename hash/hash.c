@@ -68,11 +68,10 @@ size_t obtener_posicion(hash_t* hash, size_t posicion_hash, char* clave) {
 }
 
 /* Creo un item */
-item_t* crear_item(void* valor, char* clave) {
-	item_t* item = malloc(sizeof(item_t));
-	if (item == NULL) return NULL;
-	item->valor = valor;
-	item->clave = clave;
+item_t crear_item(void* valor, char* clave) {
+	item_t item;
+	item.valor = valor;
+	item.clave = clave;
 	return item;
 }
 
@@ -89,6 +88,10 @@ hash_t* hash_crear(hash_destruir_dato_t destruir_dato) {
         free(hash);
         return NULL;
     }
+    item_t item = crear_item(NULL, NULL);
+	for (int i = 0; i < hash->capacidad; ++i) {
+		hash->tabla[i] = item;
+	}
     hash->destruir_dato = destruir_dato;
     return hash;
 }
@@ -99,9 +102,9 @@ hash_t* hash_crear(hash_destruir_dato_t destruir_dato) {
  * Post: Se almacenó el par (clave, dato)
  */
 bool hash_guardar(hash_t *hash, const char *clave, void *dato) {
-	if (hash->cantidad => hash->capacidad)
-		return false; //TODO: Redimensionar!!
-	size_t pos = funcion_hash(clave);
+//	if (hash->cantidad => hash->capacidad)
+//		return false; //TODO: Redimensionar!!
+//	size_t pos = funcion_hash(clave);
 	//if (hash->tabla[pos]->clave)
 	return true; //Provisorio
 }

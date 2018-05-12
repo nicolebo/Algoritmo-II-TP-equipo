@@ -1,5 +1,8 @@
+
+#define _POSIX_C_SOURCE 200809L
 #include "hash.h"
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #define TAM_HASH 1000;
 
@@ -23,7 +26,7 @@ struct hash_iter {
 	hash_t* hash;
 };
 
-size_t funcion_hash(char* clave) {
+size_t funcion_hash(const char* clave) {
 	size_t pos;
 	for (pos = 0; *clave != '\0'; clave++)
 		pos = *clave + 31*pos;
@@ -35,7 +38,7 @@ size_t funcion_hash(char* clave) {
  * Devuelve true si son iguales, de lo contrario devuelve false
  */
 
-bool clave_son_iguales(char* clave1, char* clave2) {
+bool clave_son_iguales(const char* clave1, const char* clave2) {
     return !strcmp(clave1, clave2);
 }
 
@@ -43,7 +46,7 @@ bool clave_son_iguales(char* clave1, char* clave2) {
  * Obtiene la posicion de una clave en el hash, en caso de que no exista la clave
  * se devuelve una posicion disponible para almacenarla
  */
-size_t obtener_posicion(hash_t* hash, size_t posicion_hash, char* clave) {
+size_t obtener_posicion(hash_t* hash, size_t posicion_hash, const char* clave) {
 
     bool encontramos = false;
     while (!encontramos) {
@@ -68,45 +71,54 @@ size_t obtener_posicion(hash_t* hash, size_t posicion_hash, char* clave) {
 }
 
 /* Creo un item */
-item_t crear_item(void* valor, char* clave) {
+item_t crear_item(void* valor, const char* clave, estado_t estado) {
 	item_t item;
 	item.valor = valor;
-	item.clave = clave;
+	item.clave = strdup(clave);
+	item.estado = estado;
 	return item;
 }
 
 /* Crea el hash */
 hash_t* hash_crear(hash_destruir_dato_t destruir_dato) {
+
 	//Creo el hash y pido memoria dinamica
 	hash_t* hash = malloc(sizeof(hash_t));
-	if(hash == NULL) return NULL;
+	if(hash == NULL) 
+		return NULL;
+	
 	hash->capacidad = TAM_HASH;
+	
 	//pido memoria dinamica para la tabla del hash
 	hash->tabla = malloc(hash->capacidad * sizeof(item_t));
-	if(hash->tabla == NULL)
-    {
+	if(hash->tabla == NULL) {
         free(hash);
         return NULL;
     }
-    item_t item = crear_item(NULL, NULL);
+
+    item_t item = crear_item(NULL, NULL, VACIO);
 	for (int i = 0; i < hash->capacidad; ++i) {
 		hash->tabla[i] = item;
 	}
+
     hash->destruir_dato = destruir_dato;
+
     return hash;
 }
 
-/* Guarda un elemento en el hash, si la clave ya se encuentra en la
- * estructura, la reemplaza. De no poder guardarlo devuelve false.
- * Pre: La estructura hash fue inicializada
- * Post: Se almacenó el par (clave, dato)
- */
 bool hash_guardar(hash_t *hash, const char *clave, void *dato) {
-//	if (hash->cantidad => hash->capacidad)
-//		return false; //TODO: Redimensionar!!
-//	size_t pos = funcion_hash(clave);
-	//if (hash->tabla[pos]->clave)
-	return true; //Provisorio
+	
+	if (clave == NULL)
+		return false;
+
+	if (hash->cantidad >= hash->capacidad)
+		return false; //TODO: Redimensionar!!
+
+	size_t pos = funcion_hash(clave);
+	pos = obtener_posicion(hash, pos, clave);
+	hash->tabla[pos] = crear_item(dato, clave, OCUPADO);
+	
+	return true; 
 }
 
 /* Borra un elemento del hash y devuelve el dato asociado.  Devuelve

@@ -4,7 +4,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#define TAM_HASH 1000;
+
+#define TAM_HASH 1000
+#define COEF_REDIM 0.7
 
 //Defino el estado de cada item
 typedef enum{VACIO, BORRADO, OCUPADO} estado_t;
@@ -79,15 +81,13 @@ item_t crear_item(void* valor, const char* clave, estado_t estado) {
 	return item;
 }
 
-/* Crea el hash */
-hash_t* hash_crear(hash_destruir_dato_t destruir_dato) {
-
+hash_t* hash_crear_dimen(hash_destruir_dato_t destruir_dato, size_t dimen) {
 	//Creo el hash y pido memoria dinamica
 	hash_t* hash = malloc(sizeof(hash_t));
 	if(hash == NULL) 
 		return NULL;
 	
-	hash->capacidad = TAM_HASH;
+	hash->capacidad = dimen;
 	
 	//pido memoria dinamica para la tabla del hash
 	hash->tabla = malloc(hash->capacidad * sizeof(item_t));
@@ -106,17 +106,47 @@ hash_t* hash_crear(hash_destruir_dato_t destruir_dato) {
     return hash;
 }
 
+bool hash_redimensionar(hash_t* hash) {
+
+	size_t nuevo_tam = hash->capacidad * 2;
+
+	hash_t* nuevo_hash = hash_crear_dimen(hash->destruir_dato, nuevo_tam);
+	if (nuevo_hash == NULL)
+		return false;
+
+	for (size_t i = 0; i < hash->capacidad; i++) {
+		if (hash->tabla[i].estado == OCUPADO) {
+			hash_guardar(
+				nuevo_hash, 
+				hash->tabla[i].clave, 
+				hash->tabla[i].valor
+			);
+		}
+	}
+
+	hash_destruir(hash);
+	hash = nuevo_hash;
+	return true;
+
+}
+
+/* Crea el hash */
+hash_t* hash_crear(hash_destruir_dato_t destruir_dato) {
+    return hash_crear_dimen(destruir_dato, TAM_HASH);
+}
+
 bool hash_guardar(hash_t *hash, const char *clave, void *dato) {
 	
 	if (clave == NULL)
 		return false;
 
-	if (hash->cantidad >= hash->capacidad)
+	if (hash->cantidad >= ((double) hash->capacidad * COEF_REDIM))
 		return false; //TODO: Redimensionar!!
 
 	size_t pos = funcion_hash(clave);
 	pos = obtener_posicion(hash, pos, clave);
 	hash->tabla[pos] = crear_item(dato, clave, OCUPADO);
+	hash->cantidad++;
 	
 	return true; 
 }
@@ -150,7 +180,9 @@ size_t hash_cantidad(const hash_t *hash);
  * Pre: La estructura hash fue inicializada
  * Post: La estructura hash fue destruida
  */
-void hash_destruir(hash_t *hash);
+void hash_destruir(hash_t *hash) {
+	
+}
 
 /* Iterador del hash */
 

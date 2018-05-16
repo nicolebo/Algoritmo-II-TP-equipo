@@ -25,7 +25,8 @@ struct hash {
 };
 
 struct hash_iter {
-	hash_t* hash;
+	const hash_t* hash;
+	size_t pos;
 };
 
 size_t funcion_hash(const char* clave) {
@@ -173,7 +174,9 @@ bool hash_pertenece(const hash_t *hash, const char *clave);
 /* Devuelve la cantidad de elementos del hash.
  * Pre: La estructura hash fue inicializada
  */
-size_t hash_cantidad(const hash_t *hash);
+size_t hash_cantidad(const hash_t *hash) {
+	return hash->cantidad;
+}
 
 /* Destruye la estructura liberando la memoria pedida y llamando a la función
  * destruir para cada par (clave, dato).
@@ -187,16 +190,44 @@ void hash_destruir(hash_t *hash) {
 /* Iterador del hash */
 
 // Crea iterador
-hash_iter_t *hash_iter_crear(const hash_t *hash);
+hash_iter_t *hash_iter_crear(const hash_t *hash) {
+	
+	hash_iter_t* iter = malloc(sizeof(hash_iter_t));
+	if (iter == NULL)
+		return NULL;
+
+	iter->hash = hash;
+	iter->pos = 0;
+
+	return iter;
+}
 
 // Avanza iterador
-bool hash_iter_avanzar(hash_iter_t *iter);
+bool hash_iter_avanzar(hash_iter_t *iter) {
+	
+	if (iter->pos > iter->hash->capacidad)
+		return false;
+	
+	iter->pos++;
+	return true;
+}
 
 // Devuelve clave actual, esa clave no se puede modificar ni liberar.
-const char *hash_iter_ver_actual(const hash_iter_t *iter);
+const char *hash_iter_ver_actual(const hash_iter_t *iter) {
+	char* clave = "";
+
+	if (iter->hash->tabla[iter->pos].estado == OCUPADO)
+		clave = strdup(iter->hash->tabla[iter->pos].clave);
+	
+	return clave;
+}
 
 // Comprueba si terminó la iteración
-bool hash_iter_al_final(const hash_iter_t *iter);
+bool hash_iter_al_final(const hash_iter_t *iter) {
+	return iter->pos == iter->hash->capacidad;
+}
 
 // Destruye iterador
-void hash_iter_destruir(hash_iter_t* iter);
+void hash_iter_destruir(hash_iter_t* iter) {
+	free(iter);
+}

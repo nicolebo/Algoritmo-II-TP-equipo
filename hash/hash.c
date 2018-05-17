@@ -21,19 +21,22 @@ struct hash {
 	item_t* tabla;
 	size_t capacidad;
 	size_t cantidad;
-	hash_destruir_dato_t destruir_dato;
+    size_t borrados;
+
+    hash_destruir_dato_t destruir_dato;
 };
 
 struct hash_iter {
 	const hash_t* hash;
 	size_t pos;
+    size_t recorridos;
 };
 
-size_t funcion_hash(const char* clave) {
+size_t funcion_hash(const char* clave, size_t tam) {
 	size_t pos;
 	for (pos = 0; *clave != '\0'; clave++)
 		pos = *clave + 31*pos;
-	return pos % TAM_HASH;
+	return pos % tam;
 }
 
 /*
@@ -49,7 +52,7 @@ bool clave_son_iguales(const char* clave1, const char* clave2) {
  * Obtiene la posicion de una clave en el hash, en caso de que no exista la clave
  * se devuelve una posicion disponible para almacenarla
  */
-size_t obtener_posicion(hash_t* hash, size_t posicion_hash, const char* clave) {
+size_t obtener_posicion(const hash_t* hash, size_t posicion_hash, const char* clave) {
 
     bool encontramos = false;
     while (!encontramos) {
@@ -73,23 +76,14 @@ size_t obtener_posicion(hash_t* hash, size_t posicion_hash, const char* clave) {
     return posicion_hash;
 }
 
-/* Creo un item */
-item_t crear_item(void* valor, const char* clave, estado_t estado) {
-	item_t item;
-	item.valor = valor;
-	item.clave = strdup(clave);
-	item.estado = estado;
-	return item;
-}
-
 hash_t* hash_crear_dimen(hash_destruir_dato_t destruir_dato, size_t dimen) {
-	//Creo el hash y pido memoria dinamica
-	hash_t* hash = malloc(sizeof(hash_t));
-	if(hash == NULL) 
+
+    hash_t* hash = malloc(sizeof(hash_t));
+	if(hash == NULL)
 		return NULL;
-	
-	hash->capacidad = dimen;
-	
+
+    hash->capacidad = dimen;
+
 	//pido memoria dinamica para la tabla del hash
 	hash->tabla = malloc(hash->capacidad * sizeof(item_t));
 	if(hash->tabla == NULL) {
@@ -97,9 +91,8 @@ hash_t* hash_crear_dimen(hash_destruir_dato_t destruir_dato, size_t dimen) {
         return NULL;
     }
 
-    item_t item = crear_item(NULL, NULL, VACIO);
-	for (int i = 0; i < hash->capacidad; ++i) {
-		hash->tabla[i] = item;
+    for (int i = 0; i < hash->capacidad; ++i) {
+		hash->tabla[i].estado = VACIO;
 	}
 
     hash->destruir_dato = destruir_dato;
@@ -112,23 +105,22 @@ bool hash_redimensionar(hash_t* hash) {
 	size_t nuevo_tam = hash->capacidad * 2;
 
 	hash_t* nuevo_hash = hash_crear_dimen(hash->destruir_dato, nuevo_tam);
+
 	if (nuevo_hash == NULL)
 		return false;
 
 	for (size_t i = 0; i < hash->capacidad; i++) {
-		if (hash->tabla[i].estado == OCUPADO) {
-			hash_guardar(
-				nuevo_hash, 
-				hash->tabla[i].clave, 
-				hash->tabla[i].valor
-			);
-		}
+		if (hash->tabla[i].estado == OCUPADO)
+			hash_guardar(nuevo_hash, hash->tabla[i].clave, hash->tabla[i].valor);
 	}
 
-	hash_destruir(hash);
-	hash = nuevo_hash;
-	return true;
-
+	item_t* aux = hash->tabla;
+	hash->tabla = nuevo_hash->tabla;
+    hash->borrados = 0;
+    hash->capacidad = nuevo_hash->capacidad;
+    free(aux);
+    free(nuevo_hash);
+    return true;
 }
 
 /* Crea el hash */
@@ -137,94 +129,132 @@ hash_t* hash_crear(hash_destruir_dato_t destruir_dato) {
 }
 
 bool hash_guardar(hash_t *hash, const char *clave, void *dato) {
-	
+
+    if (clave == NULL)
+		return false;
+
+	if (hash->cantidad + hash->borrados >= ((double) hash->capacidad * COEF_REDIM)) {
+        if(!hash_redimensionar(hash))
+            return false;
+    }
+
+	size_t pos = funcion_hash(clave, hash->capacidad);
+	pos = obtener_posicion(hash, pos, clave);
+	if (hash->tabla[pos].estado == VACIO) {
+        hash->tabla[pos].estado = OCUPADO;
+        hash->tabla[pos].clave = strdup(clave);
+        hash->cantidad++;
+	}
+    hash->tabla[pos].valor = dato;
+    return true;
+}
+
+
+void* hash_borrar(hash_t *hash, const char *clave) {
+    if (clave == NULL) return false;
+
+    size_t pos = funcion_hash(clave, hash->capacidad);
+    pos = obtener_posicion(hash, pos, clave);
+
+    if(hash->tabla[pos].estado != OCUPADO) return NULL;
+
+    hash->tabla[pos].estado = BORRADO;
+    hash->cantidad--;
+    hash->borrados++;
+    return hash->tabla[pos].valor;
+}
+
+void* hash_obtener(const hash_t *hash, const char *clave) {
 	if (clave == NULL)
 		return false;
 
-	if (hash->cantidad >= ((double) hash->capacidad * COEF_REDIM))
-		return false; //TODO: Redimensionar!!
-
-	size_t pos = funcion_hash(clave);
+	size_t pos = funcion_hash(clave, hash->capacidad);
 	pos = obtener_posicion(hash, pos, clave);
-	hash->tabla[pos] = crear_item(dato, clave, OCUPADO);
-	hash->cantidad++;
-	
-	return true; 
+	item_t item = hash->tabla[pos];
+	if(item.estado == VACIO)
+		return NULL;
+	return item.valor;
 }
 
-/* Borra un elemento del hash y devuelve el dato asociado.  Devuelve
- * NULL si el dato no estaba.
- * Pre: La estructura hash fue inicializada
- * Post: El elemento fue borrado de la estructura y se lo devolvió,
- * en el caso de que estuviera guardado.
- */
-void* hash_borrar(hash_t *hash, const char *clave);
+bool hash_pertenece(const hash_t *hash, const char *clave) {
+    if (clave == NULL)
+        return false;
+    size_t pos = funcion_hash(clave, hash->capacidad);
+    pos = obtener_posicion(hash, pos, clave);
+    item_t item = hash->tabla[pos];
+    return (item.estado == OCUPADO);
 
-/* Obtiene el valor de un elemento del hash, si la clave no se encuentra
- * devuelve NULL.
- * Pre: La estructura hash fue inicializada
- */
-void *hash_obtener(const hash_t *hash, const char *clave);
+}
 
-/* Determina si clave pertenece o no al hash.
- * Pre: La estructura hash fue inicializada
- */
-bool hash_pertenece(const hash_t *hash, const char *clave);
-
-/* Devuelve la cantidad de elementos del hash.
- * Pre: La estructura hash fue inicializada
- */
 size_t hash_cantidad(const hash_t *hash) {
 	return hash->cantidad;
 }
 
-/* Destruye la estructura liberando la memoria pedida y llamando a la función
- * destruir para cada par (clave, dato).
- * Pre: La estructura hash fue inicializada
- * Post: La estructura hash fue destruida
- */
 void hash_destruir(hash_t *hash) {
-	
+
+    for(int i = 0; i < hash->capacidad; i++){
+        if(hash->tabla[i].estado != VACIO){
+            if(hash->destruir_dato != NULL){
+                hash->destruir_dato(hash->tabla[i].valor);
+            }
+            if(hash->tabla[i].estado == OCUPADO){
+                hash->tabla[i].valor = NULL;
+                hash->tabla[i].clave = NULL;
+                hash->tabla[i].estado = VACIO;
+            }
+        }
+    }
+    hash->cantidad = 0;
+    hash->borrados = 0;
+    free(hash->tabla);
+    free(hash);
 }
 
 /* Iterador del hash */
 
 // Crea iterador
 hash_iter_t *hash_iter_crear(const hash_t *hash) {
-	
+
 	hash_iter_t* iter = malloc(sizeof(hash_iter_t));
 	if (iter == NULL)
 		return NULL;
 
 	iter->hash = hash;
-	iter->pos = 0;
-
+    iter->pos = 0;
+    iter->recorridos = 0;
+	//Si esta vacio, me voy a la ultima posicion asi no puede avanzar mas
+	if (hash_cantidad(hash) == 0){
+        iter->pos = hash->capacidad;
+	} else {
+	    //Si tiene algo me voy hasta la primera poscion que este ocupado
+        while((hash->tabla[iter->pos].estado != OCUPADO) && iter->pos < hash->capacidad-1)
+            iter->pos++;
+	}
 	return iter;
+
 }
 
-// Avanza iterador
 bool hash_iter_avanzar(hash_iter_t *iter) {
 	
-	if (iter->pos > iter->hash->capacidad)
+	if (iter->pos > iter->hash->capacidad || hash_iter_al_final(iter))
 		return false;
-	
-	iter->pos++;
+
+	iter->recorridos++;
+    while((iter->hash->tabla[iter->pos].estado != OCUPADO) && iter->pos < iter->hash->capacidad-1)
+        iter->pos++;
 	return true;
 }
 
 // Devuelve clave actual, esa clave no se puede modificar ni liberar.
 const char *hash_iter_ver_actual(const hash_iter_t *iter) {
-	char* clave = "";
+    if(hash_iter_al_final(iter)) return NULL;
+    return iter->hash->tabla[iter->pos].clave;
 
-	if (iter->hash->tabla[iter->pos].estado == OCUPADO)
-		clave = strdup(iter->hash->tabla[iter->pos].clave);
-	
-	return clave;
 }
 
 // Comprueba si terminó la iteración
 bool hash_iter_al_final(const hash_iter_t *iter) {
-	return iter->pos == iter->hash->capacidad;
+	return (iter->recorridos == (iter->hash->cantidad));
 }
 
 // Destruye iterador

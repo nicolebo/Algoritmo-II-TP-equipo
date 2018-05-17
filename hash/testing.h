@@ -15,7 +15,7 @@
 
 // Función auxiliar para print_test(). No debería ser usada directamente.
 void real_print_test(const char* mensaje, bool ok,
-		     const char* file, int line, const char* failed_expr);
+                     const char* file, int line, const char* failed_expr);
 
 // Devuelve el número total de errores registrados por print_test().
 int failure_count(void);

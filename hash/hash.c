@@ -100,27 +100,39 @@ hash_t* hash_crear_dimen(hash_destruir_dato_t destruir_dato, size_t dimen) {
     return hash;
 }
 
+void hash_destruir_tabla(item_t* tabla, size_t capacidad) {
+
+    for (size_t i = 0; i < capacidad; i++) {
+        free(tabla[i].clave);
+        free(tabla[i].valor);
+    }
+
+    free(tabla);
+
+}
+
 bool hash_redimensionar(hash_t* hash) {
 
-	size_t nuevo_tam = hash->capacidad * 2;
+    size_t nuevo_tam = hash->capacidad * 2;
+    item_t* nueva_tabla = malloc(sizeof(item_t) * nuevo_tam);
+    if (nueva_tabla == NULL)
+        return false;
 
-	hash_t* nuevo_hash = hash_crear_dimen(hash->destruir_dato, nuevo_tam);
+    item_t* vieja_tabla = hash->tabla;
+    size_t vieja_capacidad = hash->capacidad;
 
-	if (nuevo_hash == NULL)
-		return false;
-
-	for (size_t i = 0; i < hash->capacidad; i++) {
-		if (hash->tabla[i].estado == OCUPADO)
-			hash_guardar(nuevo_hash, hash->tabla[i].clave, hash->tabla[i].valor);
-	}
-
-	item_t* aux = hash->tabla;
-	hash->tabla = nuevo_hash->tabla;
+    hash->tabla = nueva_tabla;
+    hash->capacidad = nuevo_tam;
+    hash->cantidad = 0;
     hash->borrados = 0;
-    hash->capacidad = nuevo_hash->capacidad;
-    free(aux);
-    free(nuevo_hash);
+
+    for (size_t i = 0; i < vieja_capacidad; i++)
+        if (vieja_tabla[i].estado == OCUPADO)
+            hash_guardar(hash, vieja_tabla[i].clave, vieja_tabla[i].valor);
+
+    free(vieja_tabla);
     return true;
+
 }
 
 /* Crea el hash */
@@ -204,9 +216,7 @@ void hash_destruir(hash_t *hash) {
             }
         }
     }
-    hash->cantidad = 0;
-    hash->borrados = 0;
-    free(hash->tabla);
+    hash_destruir_tabla(hash->tabla, hash->capacidad);
     free(hash);
 }
 
@@ -240,8 +250,8 @@ bool hash_iter_avanzar(hash_iter_t *iter) {
 		return false;
 
 	iter->recorridos++;
-    while((iter->hash->tabla[iter->pos].estado != OCUPADO) && iter->pos < iter->hash->capacidad-1)
-        iter->pos++;
+    while ((iter->hash->tabla[iter->pos].estado != OCUPADO) && iter->pos < iter->hash->capacidad - 1) iter->pos++;
+    
 	return true;
 }
 

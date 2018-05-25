@@ -6,7 +6,7 @@
 #include <string.h>
 
 #define TAM_HASH 1000
-#define COEF_REDIM 0.7
+#define COEF_REDIM 7
 
 //Defino el estado de cada item
 typedef enum{VACIO, BORRADO, OCUPADO} estado_t;
@@ -57,6 +57,7 @@ size_t obtener_posicion(const hash_t* hash, size_t posicion_hash, const char* cl
     bool encontramos = false;
     while (!encontramos) {
         item_t item = hash->tabla[posicion_hash];
+
         switch(item.estado){
             case VACIO: encontramos = true;
                 break;
@@ -71,7 +72,6 @@ size_t obtener_posicion(const hash_t* hash, size_t posicion_hash, const char* cl
                 }
                 break;
         }
-
     }
     return posicion_hash;
 }
@@ -93,22 +93,15 @@ hash_t* hash_crear_dimen(hash_destruir_dato_t destruir_dato, size_t dimen) {
 
     for (int i = 0; i < hash->capacidad; ++i) {
 		hash->tabla[i].estado = VACIO;
-	}
-
-    hash->destruir_dato = destruir_dato;
-
-    return hash;
-}
-
-void hash_destruir_tabla(item_t* tabla, size_t capacidad) {
-
-    for (size_t i = 0; i < capacidad; i++) {
-        free(tabla[i].clave);
-        free(tabla[i].valor);
+        hash->tabla[i].clave = NULL;
+        hash->tabla[i].valor = NULL;
     }
 
-    free(tabla);
+    hash->destruir_dato = destruir_dato;
+	hash->cantidad = 0;
+	hash->borrados = 0;
 
+    return hash;
 }
 
 bool hash_redimensionar(hash_t* hash) {
@@ -145,9 +138,8 @@ bool hash_guardar(hash_t *hash, const char *clave, void *dato) {
     if (clave == NULL)
 		return false;
 
-	if (hash->cantidad + hash->borrados >= ((double) hash->capacidad * COEF_REDIM)) {
-        if(!hash_redimensionar(hash))
-            return false;
+	if ((hash->cantidad + hash->borrados) >= hash->capacidad * COEF_REDIM / 10) {
+        if(!hash_redimensionar(hash)) return false;
     }
 
 	size_t pos = funcion_hash(clave, hash->capacidad);
@@ -210,13 +202,16 @@ void hash_destruir(hash_t *hash) {
                 hash->destruir_dato(hash->tabla[i].valor);
             }
             if(hash->tabla[i].estado == OCUPADO){
-                hash->tabla[i].valor = NULL;
-                hash->tabla[i].clave = NULL;
                 hash->tabla[i].estado = VACIO;
             }
+            free(hash->tabla[i].clave);
         }
     }
-    hash_destruir_tabla(hash->tabla, hash->capacidad);
+    hash->cantidad = 0;
+    hash->borrados = 0;
+    hash->capacidad = 0;
+
+    free(hash->tabla);
     free(hash);
 }
 

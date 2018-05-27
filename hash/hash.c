@@ -144,12 +144,17 @@ bool hash_guardar(hash_t *hash, const char *clave, void *dato) {
 
 	size_t pos = funcion_hash(clave, hash->capacidad);
 	pos = obtener_posicion(hash, pos, clave);
-	if (hash->tabla[pos].estado == VACIO) {
+
+    void* anterior_dato = hash->tabla[pos].valor;
+    estado_t anterior_estado = hash->tabla[pos].estado;
+
+    if (hash->tabla[pos].estado == VACIO) {
         hash->tabla[pos].estado = OCUPADO;
         hash->tabla[pos].clave = strdup(clave);
         hash->cantidad++;
-	}
+    }
     hash->tabla[pos].valor = dato;
+    if (anterior_estado == OCUPADO && hash->destruir_dato != NULL) hash->destruir_dato(anterior_dato);
     return true;
 }
 

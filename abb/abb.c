@@ -10,7 +10,7 @@ typedef struct nodo_abb{
     void* valor;
     struct nodo_abb* izq;
     struct nodo_abb* der;
-}nodo_abb_t;
+}abb_nodo_t;
 
 struct abb {
     abb_nodo_t* raiz;
@@ -29,8 +29,8 @@ abb_t* abb_crear(abb_comparar_clave_t cmp, abb_destruir_dato_t destruir_dato) {
     return arbol;
 }
 
-nodo_abb_t* crear_nodo(const char *clave, void *dato) {
-    nodo_abb_t *nodo = malloc(sizeof(nodo_abb_t));
+abb_nodo_t* crear_nodo(const char *clave, void *dato) {
+    abb_nodo_t *nodo = malloc(sizeof(abb_nodo_t));
     if (!nodo) return NULL;
     nodo->clave = strdup(clave);
     nodo->valor = dato;
@@ -39,26 +39,28 @@ nodo_abb_t* crear_nodo(const char *clave, void *dato) {
     return nodo;
 }
 
-nodo_abb_t* obtener_padre(nodo_abb_t* nodo, const char* clave, abb_comparar_clave_t cmp) {
-    if (nodo == NULL) return NULL;
-    if(cmp(nodo->clave, clave) < 0) {
-        if(nodo->izq == NULL || cmp(nodo->izq->clave, clave) == 0) return nodo;
-        return obtener_padre(nodo->izq, clave, cmp);
-    } else if (cmp(nodo->clave, clave) > 0) {
-        if(nodo->der == NULL || cmp(nodo->der->clave, clave) == 0) return nodo;
-        return obtener_padre(nodo->der, clave, cmp);
+abb_nodo_t* obtener_padre(const abb_t *arbol, abb_nodo_t* nodo, const char* clave) {
+    if(nodo == NULL) return NULL;
+    if(arbol->cmp(nodo->clave, clave) < 0) {
+        if(nodo->izq == NULL || arbol->cmp(nodo->izq->clave, clave) == 0) return nodo;
+        return obtener_padre(arbol, nodo->izq, clave);
+    } else if (arbol->cmp(nodo->clave, clave) > 0) {
+        if(nodo->der == NULL || arbol->cmp(nodo->der->clave, clave) == 0) return nodo;
+        return obtener_padre(arbol, nodo->der, clave);
     }
+    return NULL;
 }
-nodo_abb_t* buscar_nodo(abb_t *arbol, nodo_abb_t* nodo, const char* clave) {
-    if (nodo == NULL) return NULL;
-    if (cmp(nodo->clave, clave) == 0) return nodo;
+abb_nodo_t* buscar_nodo(const abb_t *arbol, abb_nodo_t* nodo, const char* clave) {
+    if(nodo == NULL) return NULL;
+    if(arbol->cmp(nodo->clave, clave) == 0) return nodo;
     if(nodo->der != NULL) return buscar_nodo(arbol, nodo->der, clave);
-    if(cmp(nodo->clave, clave) < 0) return buscar_nodo(arbol, nodo->izq, clave);
+    if(arbol->cmp(nodo->clave, clave) < 0) return buscar_nodo(arbol, nodo->izq, clave);
+    return NULL;
 }
 
 bool abb_guardar(abb_t *arbol, const char *clave, void *dato) {
     if(clave == NULL) return false;
-    nodo_abb_t* nuevo_nodo = crear_nodo(clave, dato);
+    abb_nodo_t* nuevo_nodo = crear_nodo(clave, dato);
     if(nuevo_nodo == NULL) return false;
 
     //Paso 1: No tiene raiz
@@ -69,14 +71,14 @@ bool abb_guardar(abb_t *arbol, const char *clave, void *dato) {
     }
 
     //Paso 2: Busco en el abb si existe
-    nodo_abb_t* nodo_actual = buscar_nodo(arbol, arbol->raiz, clave);
+    abb_nodo_t* nodo_actual = buscar_nodo(arbol, arbol->raiz, clave);
     if(nodo_actual != NULL){
         //Existe, por lo tanto lo remplazo
         if(arbol->destruir_dato != NULL) arbol->destruir_dato(nodo_actual->valor);
         nodo_actual->valor =  dato;
     } else {
         //Paso 3: Busco en el abb donde estaria y agarro al padre
-        nodo_abb_t* padre = obtener_padre(arbol->raiz, clave, arbol->cmp);
+        abb_nodo_t* padre = obtener_padre(arbol, arbol->raiz, clave);
         (arbol->cmp(padre->clave, clave) < 0) ? (padre->izq = nuevo_nodo) : (padre->der = nuevo_nodo);
     }
     return true;

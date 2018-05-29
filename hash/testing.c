@@ -9,7 +9,7 @@
 static int _failure_count;
 
 void real_print_test(const char* mensaje, bool ok,
-					 const char* file, int line, const char* failed_expr) {
+		     const char* file, int line, const char* failed_expr) {
 	if (ok) {
 		printf("%s... ", mensaje);
 		if (isatty(1)==1) printf(ANSI_COLOR_LGH_GREEN);

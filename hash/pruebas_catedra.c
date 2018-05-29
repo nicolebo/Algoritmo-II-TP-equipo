@@ -339,7 +339,7 @@ static void prueba_hash_iterar_volumen(size_t largo)
 
     size_t valores[largo];
 
-    // Inserta 'largo' parejas en el hash
+    /* Inserta 'largo' parejas en el hash */
     bool ok = true;
     for (unsigned i = 0; i < largo; i++) {
         sprintf(claves[i], "%08d", i);
@@ -379,7 +379,7 @@ static void prueba_hash_iterar_volumen(size_t largo)
     print_test("Prueba hash iteración en volumen, recorrio todo el largo", i == largo);
     print_test("Prueba hash iterador esta al final, es true", hash_iter_al_final(iter));
 
-   ok = true;
+    ok = true;
     for (i = 0; i < largo; i++) {
         if ( valores[i] != largo ) {
             ok = false;
@@ -409,12 +409,12 @@ void pruebas_hash_catedra()
     prueba_hash_borrar();
     prueba_hash_clave_vacia();
     prueba_hash_valor_null();
-    prueba_hash_volumen(5, true);
+    prueba_hash_volumen(5000, true);
     prueba_hash_iterar();
-    prueba_hash_iterar_volumen(5);
+    prueba_hash_iterar_volumen(5000);
 }
 
 void pruebas_volumen_catedra(size_t largo)
 {
-    //prueba_hash_volumen(largo, false);
+    prueba_hash_volumen(largo, false);
 }

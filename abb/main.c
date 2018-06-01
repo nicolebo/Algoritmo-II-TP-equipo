@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-void pruebas_abb_alumno(void);
+void pruebas_alumno(void);
 
 /* ******************************************************************
  *                        PROGRAMA PRINCIPAL
@@ -11,7 +11,7 @@ void pruebas_abb_alumno(void);
 int main(int argc, char *argv[])
 {
     printf("~~~ PRUEBAS ALUMNO ~~~\n");
-    pruebas_abb_alumno();
+    pruebas_alumno();
 
     return failure_count() > 0;
 }

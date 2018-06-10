@@ -110,41 +110,82 @@ bool abb_guardar(abb_t *arbol, const char *clave, void *dato) {
 }
 
 void* abb_borrar(abb_t *arbol, const char *clave) {
-    if(arbol == NULL) return NULL;
-    abb_nodo_t* nodo_borrar = buscar_nodo(arbol, arbol->raiz, clave);
-    if(nodo_borrar == NULL) return NULL;
-    void* borrado = NULL;
-    //Si directamente es la raiz, eliminamos el nodo
-    if(arbol->raiz == nodo_borrar && arbol->cantidad == 1) {
-        borrado = borrar_nodo(arbol, nodo_borrar);
-        arbol->raiz = NULL;
-        return borrado;
-    }
-    fprintf(stdout, "llego hasta aca");
 
-    abb_nodo_t* padre = obtener_padre(arbol, arbol->raiz, clave);
-    //Caso es hoja
-    if(!nodo_borrar->izq && !nodo_borrar->der) {
-        if (arbol->cmp(nodo_borrar->clave, padre->izq->clave) == 0) {
-            padre->izq = NULL;
-        } else{
-            padre->der = NULL;
-        }
-        //Me queda por borrar el nodo
-        borrado = borrar_nodo(arbol, nodo_borrar);
-    } else if((nodo_borrar->izq && !nodo_borrar->der) || (!nodo_borrar->izq && nodo_borrar->der)) {
-        //Caso tiene un hijo
-        abb_nodo_t* hijo;
-        if(nodo_borrar->izq) {
-            hijo = nodo_borrar->izq;
-        } else {
-            hijo = nodo_borrar->der;
-        }
-        swap_nodos(nodo_borrar, hijo);
-        //ahora borro el que se llama hijo como si fuera una hoja
-        borrado = borrar_nodo(arbol, hijo);
+    abb_nodo_t* nodo = buscar_nodo(arbol, arbol->raiz, clave);
+    abb_nodo_t* nodo_padre = obtener_padre(arbol, nodo, clave);
+    abb_nodo_t* nodo_borrar = nodo;
+
+    if (nodo->izq && nodo->der) {
+        abb_nodo_t* nodo_reemplazante = nodo->der;
+
+        while (nodo_reemplazante->izq)
+            nodo_reemplazante = nodo_reemplazante->izq;
+        
+        swap_nodos(nodo, nodo_reemplazante);
+        nodo_borrar = nodo_reemplazante;
+
+    } else if (nodo->izq || nodo->der) {
+        
+        if (nodo_padre && nodo_padre->izq == nodo)
+            nodo_padre->izq = nodo->izq ? nodo->izq : nodo->der;
+    
+        else if (nodo_padre)
+            nodo_padre->der = nodo->izq ? nodo->izq : nodo->der;
+
+        else
+            abb->raiz = nodo->izq ? nodo->izq : nodo->der;
+    
+    } else {
+    
+        if (nodo_padre && nodo_padre->izq == nodo)
+            nodo_padre->izq = NULL;
+    
+        else if (nodo_padre)
+            nodo_padre->der = NULL;
+
+        else
+            abb->raiz = NULL;
+    
     }
-    return borrado;
+
+    return borrar_nodo(nodo_borrar);
+
+    // if(arbol == NULL) return NULL;
+    // abb_nodo_t* nodo_borrar = buscar_nodo(arbol, arbol->raiz, clave);
+    // if(nodo_borrar == NULL) return NULL;
+    // void* borrado = NULL;
+    // //Si directamente es la raiz, eliminamos el nodo
+    // if(arbol->raiz == nodo_borrar && arbol->cantidad == 1) {
+    //     borrado = borrar_nodo(arbol, nodo_borrar);
+    //     arbol->raiz = NULL;
+    //     return borrado;
+    // }
+    // fprintf(stdout, "llego hasta aca");
+
+    // abb_nodo_t* padre = obtener_padre(arbol, arbol->raiz, clave);
+    // //Caso es hoja
+    // if(!nodo_borrar->izq && !nodo_borrar->der) {
+    //     if (arbol->cmp(nodo_borrar->clave, padre->izq->clave) == 0) {
+    //         padre->izq = NULL;
+    //     } else{
+    //         padre->der = NULL;
+    //     }
+    //     //Me queda por borrar el nodo
+    //     borrado = borrar_nodo(arbol, nodo_borrar);
+    // } else if((nodo_borrar->izq && !nodo_borrar->der) || (!nodo_borrar->izq && nodo_borrar->der)) {
+    //     //Caso tiene un hijo
+    //     abb_nodo_t* hijo;
+    //     if(nodo_borrar->izq) {
+    //         hijo = nodo_borrar->izq;
+    //     } else {
+    //         hijo = nodo_borrar->der;
+    //     }
+    //     swap_nodos(nodo_borrar, hijo);
+    //     //ahora borro el que se llama hijo como si fuera una hoja
+    //     //falta llamar recursivamente si existen mas hijos debajo
+    //     borrado = borrar_nodo(arbol, hijo);
+    // }
+    // return borrado;
 }
 
 void *abb_obtener(const abb_t *arbol, const char *clave) {

@@ -7,50 +7,50 @@
 #include <string.h>
 #include <time.h>
 
-//static void swap(void* array[], size_t p1, size_t p2)
-//{
-//    void* temp = array[p1];
-//    array[p1] = array[p2];
-//    array[p2] = temp;
-//}
+static void swap(void* array[], size_t p1, size_t p2)
+{
+    void* temp = array[p1];
+    array[p1] = array[p2];
+    array[p2] = temp;
+}
 
 
 /* ******************************************************************
  *                   PRUEBAS UNITARIAS ALUMNO
  * *****************************************************************/
-//
-//void prueba_crear_arbol_vacio(){
-//
-//    fputs("### INICIO DE PRUEBAS ARBOL VACIO ###\n", stdout);
-//    abb_t* arbol = abb_crear(strcmp,NULL);
-//    print_test("Se creo un arbol vacio", arbol != NULL);
-//    print_test("Cantidad de nodos es 0", abb_cantidad(arbol)==0);
-//    print_test("Obtener devuelve NULL", !abb_obtener(arbol,"clave"));
-//    print_test("No existe ninguna clave", !abb_pertenece(arbol,"clave"));
-//    abb_destruir(arbol);
-//    print_test("Arbol destruido",true);
-//    printf("\n");
-//}
-//
-//void prueba_abb_null(){
-//    fputs("### INICIO DE PRUEBAS CON NULL ###\n", stdout);
-//    abb_t* arbol2 = abb_crear(strcmp,NULL);
-//    print_test("Insertar clave vacia y valor NULL", abb_guardar(arbol2, "", NULL));
-//    print_test("la cantidad de elementos es 1", abb_cantidad(arbol2) == 1);
-//    print_test("Obtener clave vacia es valor NULL", abb_obtener(arbol2, "") == NULL);
-//    print_test("Pertenece clave vacia, es true", abb_pertenece(arbol2, ""));
-//    print_test("Borrar clave vacia, es valor NULL", abb_borrar(arbol2, "") == NULL);
-//    print_test("La cantidad de elementos es 0", abb_cantidad(arbol2) == 0);
-//    abb_destruir(arbol2);
-//    printf("\n");
-//}
+
+void prueba_crear_arbol_vacio(){
+
+    fputs("### INICIO DE PRUEBAS ARBOL VACIO ###\n", stdout);
+    abb_t* arbol = abb_crear(strcmp,NULL);
+    print_test("Se creo un arbol vacio", arbol != NULL);
+    print_test("Cantidad de nodos es 0", abb_cantidad(arbol)==0);
+    print_test("Obtener devuelve NULL", !abb_obtener(arbol,"clave"));
+    print_test("No existe ninguna clave", !abb_pertenece(arbol,"clave"));
+    abb_destruir(arbol);
+    print_test("Arbol destruido",true);
+    printf("\n");
+}
+
+void prueba_abb_null(){
+    fputs("### INICIO DE PRUEBAS CON NULL ###\n", stdout);
+    abb_t* arbol2 = abb_crear(strcmp,NULL);
+    print_test("Insertar clave vacia y valor NULL", abb_guardar(arbol2, "", NULL));
+    print_test("la cantidad de elementos es 1", abb_cantidad(arbol2) == 1);
+    print_test("Obtener clave vacia es valor NULL", abb_obtener(arbol2, "") == NULL);
+    print_test("Pertenece clave vacia, es true", abb_pertenece(arbol2, ""));
+    print_test("Borrar clave vacia, es valor NULL", abb_borrar(arbol2, "") == NULL);
+    print_test("La cantidad de elementos es 0", abb_cantidad(arbol2) == 0);
+    abb_destruir(arbol2);
+    printf("\n");
+}
 
 void prueba_algunos_elementos(){
     fputs("### INICIO DE PRUEBAS CON ALGUNOS ELEMENTOS ###\n",stdout);
     abb_t* arbol3 = abb_crear(strcmp,NULL);
-    char* clave1 = "hola";
+    char* clave1 = "a";
     char* valor1 = "chau";
-    char* clave2 = "jaja";
+    char* clave2 = "b";
     char* valor2 = "jeje";
     print_test("Insertar clave1 y valor1", abb_guardar(arbol3,clave1,valor1));
     print_test("Insertar clave2 y valor 2", abb_guardar(arbol3,clave2,valor2));
@@ -60,71 +60,75 @@ void prueba_algunos_elementos(){
     print_test("Obtener clave1 es valor1", abb_obtener(arbol3,clave1)==valor1);
     print_test("Obtener clave2 es valor2", abb_obtener(arbol3,clave2)==valor2);
     print_test("Borrar clave1 es valor1", abb_borrar(arbol3,clave1)==valor1);
+    print_test("Cantidad es 1", abb_cantidad(arbol3)==1);
+
     print_test("Borrar clave2 es valor2", abb_borrar(arbol3,clave2)==valor2);
     print_test("Cantidad es 0", abb_cantidad(arbol3)==0);
     abb_destruir(arbol3);
     printf("\n");
 
 }
-//
-//static void prueba_muchos_elementos(size_t largo) {
-//    fputs("### INICIO DE PRUEBAS CON MUCHOS ELEMENTOS ###\n",stdout);
-//    //Inserto 'cantidad_elementos' veces el mismo par clave,valor
-//    abb_t* arbol4 = abb_crear(strcmp,free);
-//
-//    const size_t largo_clave = 10;
-//    char* claves[largo];
-//    unsigned* valores[largo];
-//    bool ok = true;
-//
-//    for (unsigned i = 0; i < largo; i++) {
-//        claves[i] = malloc(largo_clave);
-//        valores[i] = malloc(sizeof(unsigned));
-//        sprintf(claves[i], "%08d", i);
-//        *valores[i] = i;
-//    }
-//
-//    srand((unsigned int) time(NULL));
-//
-//    for(int i = (int) (largo - 1); i >= 0; i--) {
-//        unsigned int j = rand() % (i+1);
-//        swap((void**) claves, i, j);
-//    }
-//
-//    for (unsigned i = 0; i < largo; i++) {
-//        ok = abb_guardar(arbol4, claves[i], valores[i]);
-//        if (!ok) break;
-//    }
-//
-//    print_test("Se insertaron muchos elementos", ok);
-//    print_test("Cantidad es largo", abb_cantidad(arbol4)==largo);
-//    bool pertenece;
-//    for(size_t j=0; j<largo;j++) {
-//        pertenece = abb_pertenece(arbol4,claves[j]);
-//    }
-//    print_test("Las claves pertenecen",pertenece);
-//    bool obtener;
-//    for(size_t x=0;x<largo;x++) {
-//        obtener = abb_obtener(arbol4,claves[x])==valores[x];
-//    }
-//    print_test("Obtener devuelve valores correctos", obtener);
-//    bool borrados = true;
-//    for(size_t i=0;i<largo;i++) {
-//        borrados = abb_borrar(arbol4,claves[i])==valores[i];
-//    }
-//    print_test("Se borraron 'largo' elementos", borrados);
-//    print_test("Cantidad es 0", abb_cantidad(arbol4)==0);
-//    abb_destruir(arbol4); //No se destruyen los datos, creo otro arbol que si destruye
-//
-//    print_test("Destruir", true);
-//
-//    for (unsigned i = 0; i < largo; i++) {
-//        free(valores[i]);
-//        free(claves[i]);
-//    }
-//    printf("\n");
-//
-//}
+
+static void prueba_muchos_elementos(size_t largo) {
+    fputs("### INICIO DE PRUEBAS CON MUCHOS ELEMENTOS ###\n",stdout);
+    //Inserto 'cantidad_elementos' veces el mismo par clave,valor
+    abb_t* arbol4 = abb_crear(strcmp, free);
+
+    const size_t largo_clave = 10;
+    char* claves[largo];
+    unsigned* valores[largo];
+    bool ok = true;
+
+    for (unsigned i = 0; i < largo; i++) {
+        claves[i] = malloc(largo_clave);
+        valores[i] = malloc(sizeof(unsigned));
+        sprintf(claves[i], "%08d", i);
+        *valores[i] = i;
+    }
+
+    srand((unsigned int) time(NULL));
+
+    for(int i = (int) (largo - 1); i >= 0; i--) {
+        unsigned int j = rand() % (i+1);
+        swap((void**) claves, i, j);
+    }
+
+    for (unsigned i = 0; i < largo; i++) {
+        ok = abb_guardar(arbol4, claves[i], valores[i]);
+        if (!ok) break;
+    }
+
+    print_test("Se insertaron muchos elementos", ok);
+    print_test("Cantidad es largo", abb_cantidad(arbol4)==largo);
+
+    bool pertenece;
+    for(size_t j=0; j<largo;j++) {
+        pertenece = abb_pertenece(arbol4,claves[j]);
+    }
+
+    print_test("Las claves pertenecen",pertenece);
+    bool obtener;
+    for(size_t x=0;x<largo;x++) {
+        obtener = abb_obtener(arbol4,claves[x])==valores[x];
+    }
+    print_test("Obtener devuelve valores correctos", obtener);
+    bool borrados = true;
+    for(size_t i=0;i<largo;i++) {
+        borrados = abb_borrar(arbol4,claves[i])==valores[i];
+    }
+    print_test("Se borraron 'largo' elementos", borrados);
+    print_test("Cantidad es 0", abb_cantidad(arbol4) == 0);
+    abb_destruir(arbol4); //No se destruyen los datos, creo otro arbol que si destruye
+
+    print_test("Destruir", true);
+
+    for (unsigned i = 0; i < largo; i++) {
+        free(valores[i]);
+        free(claves[i]);
+    }
+    printf("\n");
+
+}
 //
 //void pruebas_iter_abb_vacio(){
 //    fputs("### INICIO DE PRUEBAS CON ITER ABB VACIO ###\n",stdout);
@@ -243,10 +247,10 @@ void prueba_algunos_elementos(){
 
 void pruebas_alumno(){
     /*Ejecuta todas las funciones*/
-//    prueba_crear_arbol_vacio();
-//    prueba_abb_null();
+    prueba_crear_arbol_vacio();
+    prueba_abb_null();
     prueba_algunos_elementos();
-//    prueba_muchos_elementos(500);
+    prueba_muchos_elementos(1);
 //    pruebas_iter_abb_vacio();
 //    pruebas_iter_algunos_elementos();
 //    pruebas_iterar_volumen(500);

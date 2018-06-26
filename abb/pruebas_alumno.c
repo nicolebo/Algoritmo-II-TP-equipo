@@ -1,4 +1,5 @@
 #include "abb.h"
+#include "pila.h"
 #include "testing.h"
 #include <stddef.h>
 #include <stdbool.h>
@@ -129,130 +130,130 @@ static void prueba_muchos_elementos(size_t largo) {
     printf("\n");
 
 }
-//
-//void pruebas_iter_abb_vacio(){
-//    fputs("### INICIO DE PRUEBAS CON ITER ABB VACIO ###\n",stdout);
-//    abb_t* arbol5 = abb_crear(strcmp,NULL);
-//    abb_iter_t* iter1 = abb_iter_in_crear(arbol5);
-//    print_test("Se creo un iterador",iter1!=NULL);
-//    print_test("Iterador esta al final",abb_iter_in_al_final(iter1));
-//    print_test("Avanzar en abb vacio es false", !abb_iter_in_avanzar(iter1));
-//    print_test("Ver actual es NULL", abb_iter_in_ver_actual(iter1)==NULL);
-//    abb_destruir(arbol5);
-//    abb_iter_in_destruir(iter1);
-//    printf("\n");
-//}
-//
-//void pruebas_iter_algunos_elementos(){
-//    fputs("### INICIO DE PRUEBAS CON ITER ABB ALGUNOS ELEMENTOS ###\n",stdout);
-//    abb_t* arbol6 = abb_crear(strcmp,NULL);
-//    char* claves[5] = {"1","2","3","4","5"};
-//    char* valores[5] = {"programacion","wachenchauzer","busqueda","juli"};
-//    //Inserto 5 pares clave,valor
-//    bool ok;
-//    for(int i=0;i<5;i++){
-//        ok = abb_guardar(arbol6,claves[i],valores[i]);
-//    }
-//    print_test("Se insertaron 5 elementos",ok);
-//    print_test("Cantidad es 5", abb_cantidad(arbol6)==5);
-//    abb_iter_t* iter2 = abb_iter_in_crear(arbol6);
-//    print_test("Se creo un iter", iter2!=NULL);
-//    //Como itera INORDER, el actual es el mas chico de las claves.
-//    print_test("Ver actual es '1'", atoi(abb_iter_in_ver_actual(iter2))==atoi(claves[0]));
-//    print_test("Avanzo un lugar",abb_iter_in_avanzar(iter2));
-//    print_test("Iter no esta al final", !abb_iter_in_al_final(iter2));
-//    print_test("Ver actual es '2'", atoi(abb_iter_in_ver_actual(iter2))==atoi(claves[1]));
-//    abb_iter_in_avanzar(iter2);
-//    abb_iter_in_avanzar(iter2);
-//    abb_iter_in_avanzar(iter2);
-//    abb_iter_in_avanzar(iter2);
-//
-//    print_test("Avanza el iterado, Esta al final", abb_iter_in_al_final(iter2));
-//    abb_iter_in_destruir(iter2);
-//    abb_destruir(arbol6);
-//    print_test("Arbol e iter destruidos",true);
-//    printf("\n");
-//}
-//
-//static void pruebas_iterar_volumen(size_t largo) {
-//    fputs("### INICIO DE PRUEBAS CON ITER VOLUMEN ###\n",stdout);
-//    abb_t* arbol7 = abb_crear(strcmp,free);
-//
-//    const size_t largo_clave = 10;
-//    char* claves[largo];
-//    unsigned* valores[largo];
-//    bool ok = true;
-//
-//    for (unsigned i = 0; i < largo; i++) {
-//        claves[i] = malloc(largo_clave);
-//        valores[i] = malloc(sizeof(unsigned));
-//        sprintf(claves[i], "%08d", i);
-//        *valores[i] = i;
-//    }
-//
-//    srand((unsigned int) time(NULL));
-//
-//    // Mezclamos el array: algoritmo de Fisher–Yates
-//    for(int i = (int) (largo - 1); i >= 0; i--) {
-//        unsigned int j = rand() % (i+1);
-//        swap((void**) claves, i, j);
-//    }
-//
-//    for (unsigned i = 0; i < largo; i++) {
-//        ok = abb_guardar(arbol7, claves[i], valores[i]);
-//        if (!ok) break;
-//    }
-//
-//    print_test("Se insertaron muchos elementos", ok);
-//    print_test("Cantidad es largo", abb_cantidad(arbol7)==largo);
-//    abb_iter_t* iter3 = abb_iter_in_crear(arbol7);
-//    print_test("Se creo un iterador", iter3 != NULL);
-//    bool avance;
-//    for(size_t j= 0; j<largo;j++){
-//        avance = abb_iter_in_avanzar(iter3);
-//    }
-//    print_test("Iter avanzo 'largo' veces", avance);
-//    print_test("Iter esta al final", abb_iter_in_al_final(iter3));
-//    abb_iter_in_destruir(iter3);
-//    abb_destruir(arbol7);
-//
-//    for (unsigned i = 0; i < largo; i++) {
-//        free(claves[i]);
-//    }
-//}
-//
-//bool contar_datos(const char* clave, void* valor, void* extra){
-//
-//    size_t* num = extra;
-//    print_test("Iterando",true);
-//    if(clave) *num+=1;
-//    return true;
-//}
-//void pruebas_iterador_interno(){
-//    fputs("### INICIO DE PRUEBAS CON ITERADOR INTERNO ###\n",stdout);
-//    abb_t* arbol8 = abb_crear(strcmp,NULL);
-//    char* claves[] = {"10","20","30","40"};
-//    char* valores[] = {"1","2","3","4"};
-//    print_test("Inserto primer par",abb_guardar(arbol8,claves[0],valores[0]));
-//    print_test("Inserto segundo par", abb_guardar(arbol8,claves[1],valores[1]));
-//    print_test("Inserto tercer par", abb_guardar(arbol8,claves[2],valores[2]));
-//    print_test("Inserto cuarto par", abb_guardar(arbol8,claves[3],valores[3]));
-//    size_t num=0;
-//    abb_in_order(arbol8,contar_datos,&num);
-//    //La cantidad deberia ser 4 si se itero correctamente
-//    print_test("Cantidad iterada correctamente", num==4);
-//    abb_destruir(arbol8);
-//    printf("\n");
-//}
+
+void pruebas_iter_abb_vacio(){
+    fputs("### INICIO DE PRUEBAS CON ITER ABB VACIO ###\n",stdout);
+    abb_t* arbol5 = abb_crear(strcmp,NULL);
+    abb_iter_t* iter1 = abb_iter_in_crear(arbol5);
+    print_test("Se creo un iterador",iter1!=NULL);
+    print_test("Iterador esta al final",abb_iter_in_al_final(iter1));
+    print_test("Avanzar en abb vacio es false", !abb_iter_in_avanzar(iter1));
+    print_test("Ver actual es NULL", abb_iter_in_ver_actual(iter1)==NULL);
+    abb_destruir(arbol5);
+    abb_iter_in_destruir(iter1);
+    printf("\n");
+}
+
+void pruebas_iter_algunos_elementos(){
+    fputs("### INICIO DE PRUEBAS CON ITER ABB ALGUNOS ELEMENTOS ###\n",stdout);
+    abb_t* arbol6 = abb_crear(strcmp,NULL);
+    char* claves[5] = {"1","2","3","4","5"};
+    char* valores[5] = {"programacion","wachenchauzer","busqueda","juli"};
+    //Inserto 5 pares clave,valor
+    bool ok;
+    for(int i=0;i<5;i++){
+        ok = abb_guardar(arbol6,claves[i],valores[i]);
+    }
+    print_test("Se insertaron 5 elementos",ok);
+    print_test("Cantidad es 5", abb_cantidad(arbol6)==5);
+    abb_iter_t* iter2 = abb_iter_in_crear(arbol6);
+    print_test("Se creo un iter", iter2!=NULL);
+    //Como itera INORDER, el actual es el mas chico de las claves.
+    print_test("Ver actual es '1'", atoi(abb_iter_in_ver_actual(iter2))==atoi(claves[0]));
+    print_test("Avanzo un lugar",abb_iter_in_avanzar(iter2));
+    print_test("Iter no esta al final", !abb_iter_in_al_final(iter2));
+    print_test("Ver actual es '2'", atoi(abb_iter_in_ver_actual(iter2))==atoi(claves[1]));
+    abb_iter_in_avanzar(iter2);
+    abb_iter_in_avanzar(iter2);
+    abb_iter_in_avanzar(iter2);
+    abb_iter_in_avanzar(iter2);
+
+    print_test("Avanza el iterado, Esta al final", abb_iter_in_al_final(iter2));
+    abb_iter_in_destruir(iter2);
+    abb_destruir(arbol6);
+    print_test("Arbol e iter destruidos",true);
+    printf("\n");
+}
+
+static void pruebas_iterar_volumen(size_t largo) {
+    fputs("### INICIO DE PRUEBAS CON ITER VOLUMEN ###\n",stdout);
+    abb_t* arbol7 = abb_crear(strcmp,free);
+
+    const size_t largo_clave = 10;
+    char* claves[largo];
+    unsigned* valores[largo];
+    bool ok = true;
+
+    for (unsigned i = 0; i < largo; i++) {
+        claves[i] = malloc(largo_clave);
+        valores[i] = malloc(sizeof(unsigned));
+        sprintf(claves[i], "%08d", i);
+        *valores[i] = i;
+    }
+
+    srand((unsigned int) time(NULL));
+
+    // Mezclamos el array: algoritmo de Fisher–Yates
+    for(int i = (int) (largo - 1); i >= 0; i--) {
+        unsigned int j = rand() % (i+1);
+        swap((void**) claves, i, j);
+    }
+
+    for (unsigned i = 0; i < largo; i++) {
+        ok = abb_guardar(arbol7, claves[i], valores[i]);
+        if (!ok) break;
+    }
+
+    print_test("Se insertaron muchos elementos", ok);
+    print_test("Cantidad es largo", abb_cantidad(arbol7)==largo);
+    abb_iter_t* iter3 = abb_iter_in_crear(arbol7);
+    print_test("Se creo un iterador", iter3 != NULL);
+    bool avance;
+    for(size_t j= 0; j<largo;j++){
+        avance = abb_iter_in_avanzar(iter3);
+    }
+    print_test("Iter avanzo 'largo' veces", avance);
+    print_test("Iter esta al final", abb_iter_in_al_final(iter3));
+    abb_iter_in_destruir(iter3);
+    abb_destruir(arbol7);
+
+    for (unsigned i = 0; i < largo; i++) {
+        free(claves[i]);
+    }
+}
+
+bool contar_datos(const char* clave, void* valor, void* extra){
+
+    size_t* num = extra;
+    print_test("Iterando",true);
+    if(clave) *num+=1;
+    return true;
+}
+void pruebas_iterador_interno(){
+    fputs("### INICIO DE PRUEBAS CON ITERADOR INTERNO ###\n",stdout);
+    abb_t* arbol8 = abb_crear(strcmp,NULL);
+    char* claves[] = {"10","20","30","40"};
+    char* valores[] = {"1","2","3","4"};
+    print_test("Inserto primer par",abb_guardar(arbol8,claves[0],valores[0]));
+    print_test("Inserto segundo par", abb_guardar(arbol8,claves[1],valores[1]));
+    print_test("Inserto tercer par", abb_guardar(arbol8,claves[2],valores[2]));
+    print_test("Inserto cuarto par", abb_guardar(arbol8,claves[3],valores[3]));
+    size_t num=0;
+    abb_in_order(arbol8,contar_datos,&num);
+    //La cantidad deberia ser 4 si se itero correctamente
+    print_test("Cantidad iterada correctamente", num==4);
+    abb_destruir(arbol8);
+    printf("\n");
+}
 
 void pruebas_alumno(){
     /*Ejecuta todas las funciones*/
     prueba_crear_arbol_vacio();
     prueba_abb_null();
     prueba_algunos_elementos();
-    prueba_muchos_elementos(1);
-//    pruebas_iter_abb_vacio();
-//    pruebas_iter_algunos_elementos();
-//    pruebas_iterar_volumen(500);
-//    pruebas_iterador_interno();
+    prueba_muchos_elementos(500);
+    pruebas_iter_abb_vacio();
+    pruebas_iter_algunos_elementos();
+    pruebas_iterar_volumen(500);
+    pruebas_iterador_interno();
 }

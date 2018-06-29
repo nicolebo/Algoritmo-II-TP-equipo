@@ -131,7 +131,7 @@ bool abb_guardar(abb_t *arbol, const char* clave, void* dato){
     abb_nodo_t* nodo_actual = buscar_nodo(arbol, arbol->raiz, clave);
     if(nodo_actual != NULL){
         //Existe, por lo tanto lo remplazo
-        if(arbol->destruir_dato != NULL) arbol->destruir_dato(nodo_actual->valor);
+        if(arbol->destruir_dato && nodo_actual->valor) arbol->destruir_dato(nodo_actual->valor);
         nodo_actual->valor =  dato;
     } else {
         //Paso 3: Busco en el abb donde estaria y agarro al padre
@@ -146,6 +146,9 @@ void* abb_borrar(abb_t* arbol, const char* clave){
     if(!arbol || arbol->cantidad == 0) return NULL;
     abb_nodo_t* nodo_borrar = buscar_nodo(arbol, arbol->raiz, clave);
     abb_nodo_t* padre = obtener_padre(arbol, arbol->raiz, clave);
+
+    if(nodo_borrar == NULL) return NULL;
+
     if (!nodo_borrar->izq && !nodo_borrar->der)
         return borrar_hoja(arbol, clave, nodo_borrar, padre);
     else if (!nodo_borrar->izq || !nodo_borrar->der)
@@ -189,24 +192,27 @@ void abb_in_order(abb_t* arbol, bool visitar(const char *, void *, void *), void
     in_order(arbol->raiz, visitar, extra);
 }
 // Iterador externo
-void apilar_recursivo(abb_iter_t* iter, abb_nodo_t* nodo){
-    if (!nodo) return ;
-    pila_apilar(iter->pila, nodo);
-    apilar_recursivo(iter, nodo->izq);
+void apilar_recursivo_inorder(pila_t* pila, abb_nodo_t* nodo){
+    if (nodo == NULL) return;
+    pila_apilar(pila, nodo);
+    apilar_recursivo_inorder(pila, nodo->izq);
 }
 abb_iter_t* abb_iter_in_crear(const abb_t* arbol){
     if (!arbol) return NULL;
     abb_iter_t* iter = malloc(sizeof(abb_iter_t));
     if (!iter) return NULL;
     iter->pila = pila_crear();
-    if(!iter->pila) return NULL;
-    apilar_recursivo(iter, arbol->raiz);
+    if(!iter->pila){
+        free(iter);
+        return NULL;
+    }
+    apilar_recursivo_inorder(iter->pila, arbol->raiz);
     return iter;
 }
 bool abb_iter_in_avanzar(abb_iter_t* iter){
     if(abb_iter_in_al_final(iter)) return false;
     abb_nodo_t* actual = pila_desapilar(iter->pila);
-    if(actual->der) apilar_recursivo(iter, actual->der);
+    if(actual->der) apilar_recursivo_inorder(iter->pila, actual->der);
     return true;
 }
 const char* abb_iter_in_ver_actual(const abb_iter_t* iter){
